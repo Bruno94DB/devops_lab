@@ -1,0 +1,43 @@
+grafana:
+  adminPassword: "admin"
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - grafana.lab.local
+  persistence:
+    enabled: false
+
+prometheus:
+  prometheusSpec:
+    retention: 6h
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    storageSpec: {}
+
+alertmanager:
+  alertmanagerSpec:
+    storage: {}
+
+# Disable components heavy for local lab
+kubeEtcd:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+
+# Reduce node-exporter resources
+nodeExporter:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi

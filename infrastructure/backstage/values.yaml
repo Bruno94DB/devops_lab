@@ -1,0 +1,78 @@
+backstage:
+  image:
+    registry: ghcr.io
+    repository: backstage/backstage
+    tag: latest
+    pullPolicy: Always
+
+  # Secret kreiran skriptom 04-backstage-secrets.sh (NIJE u Gitu)
+  extraEnvVarsSecrets:
+    - backstage-secrets
+
+  appConfig:
+    app:
+      title: DevOps Lab Portal
+      baseUrl: http://backstage.lab.local
+
+    organization:
+      name: DevOps Lab
+
+    backend:
+      baseUrl: http://backstage.lab.local
+      listen:
+        port: 7007
+      cors:
+        origin: http://backstage.lab.local
+        methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+        credentials: true
+      database:
+        client: pg
+        connection:
+          host: ${POSTGRES_HOST}
+          port: ${POSTGRES_PORT}
+          user: ${POSTGRES_USER}
+          password: ${POSTGRES_PASSWORD}
+
+    auth:
+      environment: development
+      providers:
+        guest:
+          dangerouslyAllowOutsideDevelopment: true
+
+    integrations:
+      github:
+        - host: github.com
+          token: ${GITHUB_TOKEN}
+
+    catalog:
+      rules:
+        - allow: [Component, System, API, Resource, Location, Template]
+      locations:
+        - type: url
+          target: https://github.com/Bruno94DB/devops_lab/blob/main/backstage/catalog-info.yaml
+          rules:
+            - allow: [Component, System, Template, Location]
+
+    kubernetes:
+      serviceLocatorMethod:
+        type: multiTenant
+      clusterLocatorMethods:
+        - type: config
+          clusters:
+            - url: https://kubernetes.default.svc
+              name: devops-lab
+              authProvider: serviceAccount
+              serviceAccountToken: ${K8S_SA_TOKEN}
+              skipTLSVerify: true
+
+postgresql:
+  enabled: true
+  auth:
+    username: backstage
+    password: "backstage-db"
+    database: backstage
+
+ingress:
+  enabled: true
+  className: nginx
+  host: backstage.lab.local

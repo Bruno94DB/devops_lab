@@ -1,0 +1,46 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: devops-lab-root
+  description: DevOps Lab root catalog location
+spec:
+  targets:
+    - ./templates/scale-tetris/template.yaml
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: devops-lab-platform
+  description: Local DevOps Lab — k3d + ArgoCD + Crossplane + Backstage
+  tags:
+    - k3d
+    - gitops
+    - crossplane
+spec:
+  owner: devops-lab-team
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: tetris
+  description: Tetris demo app deployed via ArgoCD GitOps on k3d
+  annotations:
+    backstage.io/kubernetes-id: tetris
+    backstage.io/kubernetes-namespace: tetris
+    github.com/project-slug: Bruno94DB/devops_lab
+  tags:
+    - demo
+    - kubernetes
+    - gitops
+    - nginx
+  links:
+    - url: http://tetris.lab.local
+      title: Live App
+      icon: web
+spec:
+  type: service
+  lifecycle: experimental
+  owner: devops-lab-team
+  system: devops-lab-platform

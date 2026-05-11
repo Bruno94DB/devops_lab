@@ -1,0 +1,64 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: scale-tetris
+  title: Scale Tetris App
+  description: >
+    Scale the Tetris demo app by changing the number of replicas.
+    Creates a GitHub Pull Request — ArgoCD auto-syncs after merge.
+  tags:
+    - gitops
+    - kubernetes
+    - scaling
+spec:
+  owner: devops-lab-team
+  type: service
+
+  parameters:
+    - title: Scale Configuration
+      required:
+        - replicas
+      properties:
+        replicas:
+          title: Number of Replicas
+          type: integer
+          description: How many Tetris pods to run (1–10)
+          default: 1
+          minimum: 1
+          maximum: 10
+          ui:widget: range
+
+  steps:
+    - id: fetch-skeleton
+      name: Prepare Deployment Manifest
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          replicas: ${{ parameters.replicas }}
+
+    - id: create-pr
+      name: Open Pull Request
+      action: publish:github:pull-request
+      input:
+        repoUrl: github.com?owner=Bruno94DB&repo=devops_lab
+        branchName: scale-tetris-${{ parameters.replicas }}-replicas
+        title: "Scale Tetris to ${{ parameters.replicas }} replica(s)"
+        description: |
+          ## Scale Tetris
+
+          Triggered from **Backstage DevOps Lab Portal**
+
+          | Field | Value |
+          |-------|-------|
+          | Replicas | `${{ parameters.replicas }}` |
+          | File changed | `apps/tetris/deployment.yaml` |
+
+          ArgoCD will auto-sync this after merge.
+        targetPath: apps/tetris
+
+  output:
+    links:
+      - title: Open Pull Request
+        url: ${{ steps['create-pr'].output.remoteUrl }}
+        icon: github

@@ -32,6 +32,8 @@ backstage:
           port: ${POSTGRES_PORT}
           user: ${POSTGRES_USER}
           password: ${POSTGRES_PASSWORD}
+      csp:
+        upgrade-insecure-requests: false
 
     auth:
       environment: development

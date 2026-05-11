@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tetris
+  namespace: tetris
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: tetris.lab.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tetris
+                port:
+                  number: 80

@@ -9,6 +9,7 @@ controller:
     enable-ssl-passthrough: ""
   config:
     use-forwarded-headers: "true"
+    allow-snippet-annotations: "true"
   resources:
     requests:
       cpu: 100m

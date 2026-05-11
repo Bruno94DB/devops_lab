@@ -1,0 +1,43 @@
+# XRD definira novi Kubernetes API tip: DemoApp
+# Razvojni tim piše: "Treba mi DemoApp" — Crossplane kreira sve ispod
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xdemoapps.lab.devops.io
+spec:
+  group: lab.devops.io
+  names:
+    kind: XDemoApp
+    plural: xdemoapps
+  claimNames:
+    kind: DemoApp
+    plural: demoapps
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                appName:
+                  type: string
+                  description: Ime aplikacije (postaje prefiks namespacea i deploymenta)
+                image:
+                  type: string
+                  description: Container image
+                  default: "nginx:alpine"
+                replicas:
+                  type: integer
+                  description: Broj replika
+                  default: 1
+                  minimum: 1
+                  maximum: 10
+              required:
+                - appName
+            status:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true

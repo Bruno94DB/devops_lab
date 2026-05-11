@@ -1,0 +1,13 @@
+# Ovo je ono što "razvojni tim" šalje.
+# Ne znaju ništa o Namespaceu, Deploymentu ni Serviceu.
+# Kažu samo: "Trebam DemoApp, 2 replike, nginx:alpine."
+# Crossplane kreira sve ostalo prema Composition-u.
+apiVersion: lab.devops.io/v1alpha1
+kind: DemoApp
+metadata:
+  name: my-demoapp
+  namespace: crossplane-system
+spec:
+  appName: my-app
+  image: nginx:alpine
+  replicas: 2

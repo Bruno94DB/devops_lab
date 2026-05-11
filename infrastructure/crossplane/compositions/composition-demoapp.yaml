@@ -1,124 +1,127 @@
-# Composition definira ŠTO se kreira kad netko zatraži DemoApp:
-# - Namespace:  demo-{appName}
-# - Deployment: {appName} u tom namespaceu
-# - Service:    {appName} u tom namespaceu
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
   name: demoapp.lab.devops.io
 spec:
-  mode: Resources
   compositeTypeRef:
     apiVersion: lab.devops.io/v1alpha1
     kind: XDemoApp
-  resources:
-    - name: namespace
-      base:
-        apiVersion: kubernetes.crossplane.io/v1alpha2
-        kind: Object
-        spec:
-          providerConfigRef:
-            name: default
-          forProvider:
-            manifest:
-              apiVersion: v1
-              kind: Namespace
-              metadata:
-                name: placeholder
-      patches:
-        - type: FromCompositeFieldPath
-          fromFieldPath: spec.appName
-          toFieldPath: spec.forProvider.manifest.metadata.name
-          transforms:
-            - type: string
-              string:
-                type: Format
-                fmt: "demo-%s"
-
-    - name: deployment
-      base:
-        apiVersion: kubernetes.crossplane.io/v1alpha2
-        kind: Object
-        spec:
-          providerConfigRef:
-            name: default
-          forProvider:
-            manifest:
-              apiVersion: apps/v1
-              kind: Deployment
-              metadata:
-                name: placeholder
-                namespace: placeholder
+  mode: Pipeline
+  pipeline:
+    - step: patch-and-transform
+      functionRef:
+        name: function-patch-and-transform
+      input:
+        apiVersion: pt.fn.crossplane.io/v1beta1
+        kind: Resources
+        resources:
+          - name: namespace
+            base:
+              apiVersion: kubernetes.crossplane.io/v1alpha2
+              kind: Object
               spec:
-                replicas: 1
-                selector:
-                  matchLabels:
-                    app: demoapp
-                template:
-                  metadata:
-                    labels:
-                      app: demoapp
-                  spec:
-                    containers:
-                      - name: app
-                        image: nginx:alpine
-                        ports:
-                          - containerPort: 80
-                        resources:
-                          requests:
-                            cpu: 50m
-                            memory: 32Mi
-                          limits:
-                            cpu: 100m
-                            memory: 64Mi
-      patches:
-        - type: FromCompositeFieldPath
-          fromFieldPath: spec.appName
-          toFieldPath: spec.forProvider.manifest.metadata.name
-        - type: FromCompositeFieldPath
-          fromFieldPath: spec.appName
-          toFieldPath: spec.forProvider.manifest.metadata.namespace
-          transforms:
-            - type: string
-              string:
-                type: Format
-                fmt: "demo-%s"
-        - type: FromCompositeFieldPath
-          fromFieldPath: spec.image
-          toFieldPath: spec.forProvider.manifest.spec.template.spec.containers[0].image
-        - type: FromCompositeFieldPath
-          fromFieldPath: spec.replicas
-          toFieldPath: spec.forProvider.manifest.spec.replicas
+                providerConfigRef:
+                  name: default
+                forProvider:
+                  manifest:
+                    apiVersion: v1
+                    kind: Namespace
+                    metadata:
+                      name: placeholder
+            patches:
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.appName
+                toFieldPath: spec.forProvider.manifest.metadata.name
+                transforms:
+                  - type: string
+                    string:
+                      type: Format
+                      fmt: "demo-%s"
 
-    - name: service
-      base:
-        apiVersion: kubernetes.crossplane.io/v1alpha2
-        kind: Object
-        spec:
-          providerConfigRef:
-            name: default
-          forProvider:
-            manifest:
-              apiVersion: v1
-              kind: Service
-              metadata:
-                name: placeholder
-                namespace: placeholder
+          - name: deployment
+            base:
+              apiVersion: kubernetes.crossplane.io/v1alpha2
+              kind: Object
               spec:
-                selector:
-                  app: demoapp
-                ports:
-                  - port: 80
-                    targetPort: 80
-      patches:
-        - type: FromCompositeFieldPath
-          fromFieldPath: spec.appName
-          toFieldPath: spec.forProvider.manifest.metadata.name
-        - type: FromCompositeFieldPath
-          fromFieldPath: spec.appName
-          toFieldPath: spec.forProvider.manifest.metadata.namespace
-          transforms:
-            - type: string
-              string:
-                type: Format
-                fmt: "demo-%s"
+                providerConfigRef:
+                  name: default
+                forProvider:
+                  manifest:
+                    apiVersion: apps/v1
+                    kind: Deployment
+                    metadata:
+                      name: placeholder
+                      namespace: placeholder
+                    spec:
+                      replicas: 1
+                      selector:
+                        matchLabels:
+                          app: demoapp
+                      template:
+                        metadata:
+                          labels:
+                            app: demoapp
+                        spec:
+                          containers:
+                            - name: app
+                              image: nginx:alpine
+                              ports:
+                                - containerPort: 80
+                              resources:
+                                requests:
+                                  cpu: 50m
+                                  memory: 32Mi
+                                limits:
+                                  cpu: 100m
+                                  memory: 64Mi
+            patches:
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.appName
+                toFieldPath: spec.forProvider.manifest.metadata.name
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.appName
+                toFieldPath: spec.forProvider.manifest.metadata.namespace
+                transforms:
+                  - type: string
+                    string:
+                      type: Format
+                      fmt: "demo-%s"
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.image
+                toFieldPath: spec.forProvider.manifest.spec.template.spec.containers[0].image
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.replicas
+                toFieldPath: spec.forProvider.manifest.spec.replicas
+
+          - name: service
+            base:
+              apiVersion: kubernetes.crossplane.io/v1alpha2
+              kind: Object
+              spec:
+                providerConfigRef:
+                  name: default
+                forProvider:
+                  manifest:
+                    apiVersion: v1
+                    kind: Service
+                    metadata:
+                      name: placeholder
+                      namespace: placeholder
+                    spec:
+                      selector:
+                        app: demoapp
+                      ports:
+                        - port: 80
+                          targetPort: 80
+            patches:
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.appName
+                toFieldPath: spec.forProvider.manifest.metadata.name
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.appName
+                toFieldPath: spec.forProvider.manifest.metadata.namespace
+                transforms:
+                  - type: string
+                    string:
+                      type: Format
+                      fmt: "demo-%s"

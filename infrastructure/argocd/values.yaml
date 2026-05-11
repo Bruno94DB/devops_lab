@@ -1,0 +1,26 @@
+global:
+  domain: argocd.local
+
+configs:
+  params:
+    server.insecure: "true"
+  cm:
+    # Allow ArgoCD to manage resources in all namespaces
+    application.resourceTrackingMethod: annotation
+
+server:
+  service:
+    type: ClusterIP
+
+# Single-replica setup for local lab (not HA)
+redis-ha:
+  enabled: false
+
+controller:
+  replicas: 1
+
+repoServer:
+  replicas: 1
+
+applicationSet:
+  replicas: 1

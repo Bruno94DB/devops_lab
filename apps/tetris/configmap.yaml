@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tetris-html
+  namespace: tetris
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <title>Tetris — DevOps Lab</title>
+      <style>
+        body { background: #1a1a2e; color: #eee; font-family: monospace;
+               display: flex; flex-direction: column; align-items: center;
+               justify-content: center; height: 100vh; margin: 0; }
+        h1   { color: #e94560; margin-bottom: 4px; }
+        p    { color: #a8a8b3; font-size: 0.9em; margin-bottom: 20px; }
+        canvas { border: 2px solid #e94560; background: #0f0f1a; }
+        #score { margin-top: 10px; font-size: 1.1em; }
+      </style>
+    </head>
+    <body>
+      <h1>TETRIS</h1>
+      <p>Deployed via ArgoCD GitOps on k3d &mdash; DevOps Lab</p>
+      <canvas id="c" width="240" height="480"></canvas>
+      <div id="score">Score: <span id="s">0</span></div>
+      <script>
+        const C=document.getElementById('c'),X=C.getContext('2d'),W=12,H=20,SZ=24;
+        const COLORS=['','#e94560','#0f3460','#53d8fb','#f5a623','#7ed321','#bd10e0','#50e3c2'];
+        const PIECES=[[[1,1,1,1]],[[2,2],[2,2]],[[0,3,3],[3,3,0]],[[4,4,0],[0,4,4]],
+          [[5,0,0],[5,5,5]],[[0,0,6],[6,6,6]],[[0,7,0],[7,7,7]]];
+        let board=Array.from({length:H},()=>Array(W).fill(0)),score=0,piece,px,py;
+        function rnd(arr){return arr[Math.floor(Math.random()*arr.length)];}
+        function newPiece(){piece=rnd(PIECES).map(r=>[...r]);px=Math.floor(W/2)-1;py=0;
+          if(!valid(piece,px,py)){board=Array.from({length:H},()=>Array(W).fill(0));score=0;update();}}
+        function valid(p,x,y){return p.every((r,dy)=>r.every((v,dx)=>!v||
+          (x+dx>=0&&x+dx<W&&y+dy>=0&&y+dy<H&&!board[y+dy][x+dx])));}
+        function place(){piece.forEach((r,dy)=>r.forEach((v,dx)=>{if(v)board[py+dy][px+dx]=v;}));
+          let cleared=0;for(let y=H-1;y>=0;){if(board[y].every(v=>v)){board.splice(y,1);
+            board.unshift(Array(W).fill(0));cleared++;}else y--;}
+          score+=cleared*100;document.getElementById('s').textContent=score;newPiece();}
+        function draw(){X.fillStyle='#0f0f1a';X.fillRect(0,0,W*SZ,H*SZ);
+          board.forEach((r,y)=>r.forEach((v,x)=>{if(v){X.fillStyle=COLORS[v];
+            X.fillRect(x*SZ,y*SZ,SZ-1,SZ-1);}}));
+          piece.forEach((r,dy)=>r.forEach((v,dx)=>{if(v){X.fillStyle=COLORS[v];
+            X.fillRect((px+dx)*SZ,(py+dy)*SZ,SZ-1,SZ-1);}}));}
+        function tick(){if(valid(piece,px,py+1))py++;else place();draw();}
+        document.addEventListener('keydown',e=>{
+          if(e.key==='ArrowLeft'&&valid(piece,px-1,py))px--;
+          else if(e.key==='ArrowRight'&&valid(piece,px+1,py))px++;
+          else if(e.key==='ArrowDown'&&valid(piece,px,py+1))py++;
+          else if(e.key==='ArrowUp'){
+            const r=piece[0].map((_,i)=>piece.map(row=>row[i]).reverse());
+            if(valid(r,px,py))piece=r;}
+          draw();});
+        function update(){draw();}
+        newPiece();setInterval(tick,500);
+      </script>
+    </body>
+    </html>

@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tetris
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    # IMPORTANT: Replace with your actual GitHub repo URL after pushing
+    repoURL: https://github.com/Bruno94DB/devops_lab.git
+    targetRevision: HEAD
+    path: apps/tetris
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: tetris
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

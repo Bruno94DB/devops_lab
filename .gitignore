@@ -1,0 +1,19 @@
+# Secrets — never commit these
+*.secret.yaml
+*-secret.yaml
+secrets/
+.env
+
+# ArgoCD generated admin secret (fetched via kubectl, not stored)
+argocd-initial-admin-secret
+
+# macOS
+.DS_Store
+
+# Editor
+.idea/
+*.iml
+.vscode/
+
+# Helm working dirs
+charts/

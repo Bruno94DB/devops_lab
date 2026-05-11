@@ -73,11 +73,4 @@ postgresql:
     database: backstage
 
 ingress:
-  enabled: true
-  className: nginx
-  host: backstage.lab.local
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      proxy_hide_header Strict-Transport-Security;
+  enabled: false

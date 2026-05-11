@@ -1,0 +1,13 @@
+hostname: rancher.lab.local
+replicas: 1
+bootstrapPassword: "admin"
+
+ingress:
+  tls:
+    source: rancher
+
+# PSPs removed in k8s 1.25+
+global:
+  cattle:
+    psp:
+      enabled: false

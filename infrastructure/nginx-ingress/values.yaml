@@ -5,6 +5,8 @@ controller:
     name: nginx
     enabled: true
     default: true
+  extraArgs:
+    enable-ssl-passthrough: ""
   config:
     use-forwarded-headers: "true"
   resources:

@@ -7,10 +7,10 @@ controller:
     default: true
   extraArgs:
     enable-ssl-passthrough: ""
-    annotations-risk-level: Critical
   config:
     use-forwarded-headers: "true"
     allow-snippet-annotations: "true"
+    annotations-risk-level: "Critical"
     server-snippet: |
       proxy_hide_header Strict-Transport-Security;
   resources:

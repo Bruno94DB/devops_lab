@@ -7,6 +7,8 @@ configs:
   cm:
     # Allow ArgoCD to manage resources in all namespaces
     application.resourceTrackingMethod: annotation
+  secret:
+    argocdServerAdminPassword: "$2a$10$81jQlJtrQnyuRGbxoc4JpuTAjOmerF7TxQFTaGvSZNq43jsTFY.xq"
 
 server:
   service:

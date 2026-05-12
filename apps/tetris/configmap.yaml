@@ -11,29 +11,59 @@ data:
       <meta charset="UTF-8">
       <title>Tetris — DevOps Lab</title>
       <style>
+        * { box-sizing: border-box; }
         body { background: #1a1a2e; color: #eee; font-family: monospace;
                display: flex; flex-direction: column; align-items: center;
                justify-content: center; height: 100vh; margin: 0; }
-        h1   { color: #e94560; margin-bottom: 4px; }
-        p    { color: #a8a8b3; font-size: 0.9em; margin-bottom: 20px; }
-        canvas { border: 2px solid #e94560; background: #0f0f1a; }
+        h1 { color: #e94560; margin-bottom: 4px; }
+        p  { color: #a8a8b3; font-size: 0.9em; margin-bottom: 20px; }
+
+        #menu { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+        #menu h1 { font-size: 3em; letter-spacing: 8px; margin-bottom: 8px; }
+        #menu p  { margin: 0; }
+        #btn-start {
+          background: #e94560; color: #fff; border: none; padding: 14px 48px;
+          font-family: monospace; font-size: 1.2em; letter-spacing: 2px;
+          cursor: pointer; border-radius: 4px; margin-top: 8px;
+        }
+        #btn-start:hover { background: #c73652; }
+
+        #game { display: none; flex-direction: column; align-items: center; position: relative; }
+        canvas { border: 2px solid #e94560; background: #0f0f1a; display: block; }
         #score { margin-top: 10px; font-size: 1.1em; }
+        #btn-stop {
+          position: absolute; top: -36px; right: 0;
+          background: transparent; border: 2px solid #e94560; color: #e94560;
+          font-family: monospace; font-size: 1em; width: 32px; height: 32px;
+          cursor: pointer; border-radius: 4px; line-height: 1;
+        }
+        #btn-stop:hover { background: #e94560; color: #fff; }
       </style>
     </head>
     <body>
-      <h1>TETRIS</h1>
-      <p>Deployed via ArgoCD GitOps on k3d &mdash; DevOps Lab</p>
-      <canvas id="c" width="240" height="480"></canvas>
-      <div id="score">Score: <span id="s">0</span></div>
+
+      <div id="menu">
+        <h1>TETRIS</h1>
+        <p>Deployed via ArgoCD GitOps on k3d &mdash; DevOps Lab</p>
+        <button id="btn-start">▶ START</button>
+      </div>
+
+      <div id="game">
+        <button id="btn-stop" title="Stop">✕</button>
+        <canvas id="c" width="240" height="480"></canvas>
+        <div id="score">Score: <span id="s">0</span></div>
+      </div>
+
       <script>
         const C=document.getElementById('c'),X=C.getContext('2d'),W=12,H=20,SZ=24;
         const COLORS=['','#e94560','#0f3460','#53d8fb','#f5a623','#7ed321','#bd10e0','#50e3c2'];
         const PIECES=[[[1,1,1,1]],[[2,2],[2,2]],[[0,3,3],[3,3,0]],[[4,4,0],[0,4,4]],
           [[5,0,0],[5,5,5]],[[0,0,6],[6,6,6]],[[0,7,0],[7,7,7]]];
-        let board=Array.from({length:H},()=>Array(W).fill(0)),score=0,piece,px,py;
+        let board,score,piece,px,py,loop;
+
         function rnd(arr){return arr[Math.floor(Math.random()*arr.length)];}
         function newPiece(){piece=rnd(PIECES).map(r=>[...r]);px=Math.floor(W/2)-1;py=0;
-          if(!valid(piece,px,py)){board=Array.from({length:H},()=>Array(W).fill(0));score=0;update();}}
+          if(!valid(piece,px,py))stopGame();}
         function valid(p,x,y){return p.every((r,dy)=>r.every((v,dx)=>!v||
           (x+dx>=0&&x+dx<W&&y+dy>=0&&y+dy<H&&!board[y+dy][x+dx])));}
         function place(){piece.forEach((r,dy)=>r.forEach((v,dx)=>{if(v)board[py+dy][px+dx]=v;}));
@@ -46,7 +76,27 @@ data:
           piece.forEach((r,dy)=>r.forEach((v,dx)=>{if(v){X.fillStyle=COLORS[v];
             X.fillRect((px+dx)*SZ,(py+dy)*SZ,SZ-1,SZ-1);}}));}
         function tick(){if(valid(piece,px,py+1))py++;else place();draw();}
+
+        function startGame(){
+          board=Array.from({length:H},()=>Array(W).fill(0));
+          score=0;document.getElementById('s').textContent=0;
+          document.getElementById('menu').style.display='none';
+          document.getElementById('game').style.display='flex';
+          newPiece();draw();
+          loop=setInterval(tick,500);
+        }
+
+        function stopGame(){
+          clearInterval(loop);
+          document.getElementById('game').style.display='none';
+          document.getElementById('menu').style.display='flex';
+        }
+
+        document.getElementById('btn-start').addEventListener('click',startGame);
+        document.getElementById('btn-stop').addEventListener('click',stopGame);
+
         document.addEventListener('keydown',e=>{
+          if(!loop) return;
           if(e.key==='ArrowLeft'&&valid(piece,px-1,py))px--;
           else if(e.key==='ArrowRight'&&valid(piece,px+1,py))px++;
           else if(e.key==='ArrowDown'&&valid(piece,px,py+1))py++;
@@ -54,8 +104,6 @@ data:
             const r=piece[0].map((_,i)=>piece.map(row=>row[i]).reverse());
             if(valid(r,px,py))piece=r;}
           draw();});
-        function update(){draw();}
-        newPiece();setInterval(tick,500);
       </script>
     </body>
     </html>
